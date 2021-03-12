@@ -1,30 +1,44 @@
-import pandas_datareader.data as dtr
-import datetime as dt
+import numpy as np
 import pandas as pd
-import numpy
-start = dt.datetime(2020, 8, 9)
-end = dt.datetime(2020, 12, 9)
-
-#prices = dtr.DataReader('AAPL','iex' , start, end)['Close']
-#appl= dtr.DataReader('APPL', 'iex')
-for x in range(1, 51):
-    if x % 3 == 0 and x % 5 == 0:
-        x = 'buzzfizz'
-        print(x)
-    elif x % 3 == 0:
-        x = 'fizz'
-        print(x)
-    elif x % 5 == 0:
-        x = 'buzz'
-        print(x)
-    else:
-        print(x)
+from pandas_datareader import data as web
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from scipy.stats import norm
 
 
-if 1 > 2 or 1 > 3:
-    print('no')
-else:
-    print('what')
+data=pd.DataFrame()
+data['MSFT']= web.DataReader('MSFT', data_source='yahoo', start='2019-10-3')['Close']
+real_data=data['MSFT'].values #this gets all the original price changes of the security
+#print(len(data['MSFT']))
 
 
-print((27.47 + 27.728+ 28.19+ 28.1+ 28.15)/5)
+def get_simulation(ticker, name):
+    data=pd.DataFrame()
+    data[ticker]= web.DataReader(ticker, data_source='yahoo', start='2019-10-3')['Close']
+    log_returns = np.log(1+data.pct_change())
+    mean = log_returns.mean()
+    var = log_returns.var()
+    drift = mean - (0.5 * var)
+    stdev = log_returns.std()
+    t_intervals = 362 #adjust this value depending on the length of values the code from the "web.DataReader" is able to collect, it varies with the date
+    iterations = 10 #this will determine the number of simlations we are going to run. Can be more than 10
+    daily_returns = np.exp(drift.values + stdev.values * norm.ppf(np.random.rand(t_intervals, iterations)))
+    s0 = data.iloc[-1]
+    price_list = np.zeros_like(daily_returns)
+    price_list[0] = s0
+    for t in range(1, t_intervals): #we create the lists that contain the simlations created
+        price_list[t] = price_list[t-1] * daily_returns[t]
+    #we then plot our simulation
+    plt.figure(figsize = (10,6))
+    plt.title("1 Year Monte Carlo Similation for " + name)
+    plt.ylabel("Price (P)")
+    plt.xlabel("Time (Days)")
+    plt.plot(price_list)
+    plt.plot(real_data, color='red', label= "Real Price Change")
+    plt.legend(loc='upper left')
+    plt.savefig("MT_simulation.png")
+    plt.show()
+
+
+
+get_simulation("MSFT", "Microsoft Inc") #This can be used to change the name of the security we want to look for.
