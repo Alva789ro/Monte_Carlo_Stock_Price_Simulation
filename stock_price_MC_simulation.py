@@ -8,7 +8,7 @@ from scipy.stats import norm
 
 data=pd.DataFrame()
 data['MSFT']= web.DataReader('MSFT', data_source='yahoo', start='2019-10-3')['Close']
-real_data=data['MSFT'].values #this gets all the original price changes of the security
+real_data=data['MSFT'].values #gets all the original price changes of the security
 #print(len(data['MSFT']))
 
 
