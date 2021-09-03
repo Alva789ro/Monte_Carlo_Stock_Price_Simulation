@@ -5,3 +5,5 @@ If you want to give it a try, you can change the date from where you would like 
 
 
 The intention behind the program was to test some of the functions inside numpy. This is not something that give any actual insigth about a security's future performance.
+
+Inspired by:  https://github.com/eliasmelul/finance_portfolio
